@@ -9,6 +9,12 @@ from typing import *
 import hashlib
 import os
 
+def get_gcid_piece_size(file_size: int):
+    piece_size = 0x40000
+    while file_size / piece_size > 0x200 and piece_size < 0x200000:
+        piece_size = piece_size << 1
+    return piece_size
+
 def get_gcid_digest(fp, fp_size: int, *, progress_callback=None):
     '''
     Calc GCID from `fp`.
@@ -21,9 +27,7 @@ def get_gcid_digest(fp, fp_size: int, *, progress_callback=None):
 
     h = hashlib.sha1()
 
-    piece_size = 0x40000
-    while fp_size / piece_size > 0x200 and piece_size < 0x200000:
-        piece_size = piece_size << 1
+    piece_size = get_gcid_piece_size(fp_size)
 
     buf = bytearray(piece_size)  # Reusable buffer to reduce allocations.
     buf_view = memoryview(buf)
@@ -49,6 +53,7 @@ def get_file_gcid_digest(path: str, *, progress_callback=None):
             progress_callback=progress_callback)
 
 __all__ = [
+    'get_gcid_piece_size',
     'get_gcid_digest',
     'get_file_gcid_digest'
 ]
