@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xlgcid"
-version = "0.1.1"
+version = "0.1.2"
 description = "XunLei GCID hash algorithm"
 authors = ["Cologler <skyoflw@gmail.com>"]
 license = "MIT"
