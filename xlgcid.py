@@ -5,23 +5,31 @@
 #
 # ----------
 
-from typing import *
 import hashlib
+import io
 import os
+import pathlib
+from typing import Callable, Optional, Union
 
-def get_gcid_piece_size(file_size: int):
+
+def get_gcid_piece_size(file_size: int) -> int:
     piece_size = 0x40000
     while file_size / piece_size > 0x200 and piece_size < 0x200000:
         piece_size = piece_size << 1
     return piece_size
 
-def get_gcid_digest(fp, fp_size: int, *, progress_callback=None):
+
+ProgressCallbackType = Callable[[int, int], None]
+
+def get_gcid_digest(fp: io.BufferedIOBase, fp_size: int, *,
+        progress_callback: Optional[ProgressCallbackType]=None) -> bytes:
     '''
-    Calc GCID from `fp`.
+    Compute GCID from `fp`.
     '''
 
     if progress_callback is None:
-        progress_callback = lambda _1, _2: None
+        def progress_callback(_: object, __: object, /) -> None:
+            pass
 
     # modified from https://binux.blog/2012/03/hash_algorithm_of_xunlei/
 
@@ -44,13 +52,16 @@ def get_gcid_digest(fp, fp_size: int, *, progress_callback=None):
 
     return h.digest()
 
-def get_file_gcid_digest(path: str, *, progress_callback=None):
+
+def get_file_gcid_digest(path: Union[str, pathlib.Path], *,
+        progress_callback: Optional[ProgressCallbackType]=None) -> bytes:
     '''
-    Calc GCID from `path`.
+    Compute GCID from file `path`.
     '''
     with open(path, 'rb') as fp:
         return get_gcid_digest(fp, os.path.getsize(path),
             progress_callback=progress_callback)
+
 
 __all__ = [
     'get_gcid_piece_size',
